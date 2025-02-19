@@ -9,6 +9,7 @@ use Fhaculty\Graph\Vertex;
 use Graphp\Algorithms\Search\Base;
 use Graphp\Algorithms\Search\BreadthFirst;
 use Graphp\GraphViz\GraphViz;
+use RuntimeException;
 
 final class ProjectGraph
 {
@@ -17,6 +18,17 @@ final class ProjectGraph
         public readonly array $projects,
         public readonly Graph $graph,
     ) {}
+
+    public function getRoot(): Project
+    {
+        foreach ($this->projects as $project) {
+            if ($project->isRoot()) {
+                return $project;
+            }
+        }
+
+        throw new RuntimeException('No root project found');
+    }
 
     /**
      * @param string ...$projectsWithChanges

@@ -12,4 +12,9 @@ final class Project
         /** @var list<string> */
         public readonly array $scripts,
     ) {}
+
+    public function isRoot(): bool
+    {
+        return $this->root === '';
+    }
 }
