@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Cx\Commands;
 
 use Cx\Git\Files;
+use Cx\Graph\Project;
 use Cx\Graph\ProjectGraphFactory;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,6 +30,7 @@ final class AffectedCommand extends Command
                 new InputOption('head', mode: InputOption::VALUE_REQUIRED),
                 new InputOption('uncommitted', mode: InputOption::VALUE_NONE),
                 new InputOption('untracked', mode: InputOption::VALUE_NONE),
+                new InputOption('files', mode: InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY),
                 new InputOption('target', 't', InputOption::VALUE_REQUIRED),
                 new InputOption('project', 'p', mode: InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY),
                 new InputOption('exclude', mode: InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY),
@@ -37,7 +41,7 @@ final class AffectedCommand extends Command
     {
         $projectGraph = ProjectGraphFactory::createProjectGraph();
 
-        $files = Files::diff(
+        $files = $input->getOption('files') ?: Files::diff(
             base: $input->getOption('base'),
             uncommitted: $input->getOption('uncommitted'),
             untracked: $input->getOption('untracked'),
@@ -47,6 +51,13 @@ final class AffectedCommand extends Command
         $projectsWithChanges = [];
 
         foreach ($files as $file) {
+            if (in_array($file, ['composer.json', 'composer.lock'])) {
+                $projectsWithChanges = [
+                    ...$projectsWithChanges,
+                    ...array_values(array_map(fn (Project $project) => $project->name, $projectGraph->projects)),
+                ];
+            }
+
             foreach ($projectGraph->projects as $project) {
                 if (str_starts_with($file, $project->root)) {
                     $projectsWithChanges[] = $project->name;
