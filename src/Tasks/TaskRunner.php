@@ -19,6 +19,13 @@ final class TaskRunner
         private readonly Renderer $renderer,
     ) {}
 
+    /**
+     * Runs the task execution process.
+     * 
+     * @param TaskRunnerOptions $options Configuration options for running tasks.
+     * 
+     * @return int Exit code (0 for success, 1 for failure).
+     */
     public function run(TaskRunnerOptions $options): int
     {
         $tasks = $this->prepareTasks($options);
@@ -66,7 +73,11 @@ final class TaskRunner
     }
 
     /**
-     * @param Collection<int, array{Project, string}> $tasksToRun
+     * Prepares the collection of tasks to run based on the given options.
+     * 
+     * @param TaskRunnerOptions $options Configuration options specifying task execution.
+     * 
+     * @return TaskCollection Collection of tasks to be executed.
      */
     private function prepareTasks(TaskRunnerOptions $options): TaskCollection
     {

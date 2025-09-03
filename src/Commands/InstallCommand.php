@@ -80,7 +80,7 @@ final class InstallCommand extends Command
             overwriteNewerFiles: true,
         );
 
-        $projectComposerLockContents = json_decode(file_get_contents($projectComposerLock));
+        $projectComposerLockContents = json_decode($this->readComposerLockFile($projectComposerLock));
 
         $lockedPackages = collect($projectComposerLockContents->packages)
             ->pluck('version', 'name')
@@ -114,5 +114,23 @@ final class InstallCommand extends Command
         } finally {
             $filesystem->remove($projectComposerLock);
         }
+    }
+
+    /**
+     * Reads and returns the content of the Composer lock file.
+     *
+     * @param string $filePath The path to the Composer lock file.
+     * @return string The content of the lock file.
+     * @throws \RuntimeException If the file cannot be read.
+     */
+    private function readComposerLockFile(string $filePath): string
+    {
+        $content = file_get_contents($filePath);
+
+        if ($content === false) {
+            throw new \RuntimeException("Failed to read Composer lock file at: $filePath");
+        }
+
+        return $content;
     }
 }
